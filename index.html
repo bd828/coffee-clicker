@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Империя Кофе</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4ece6;
+            color: #3e2723;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            user-select: none;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .rank-badge {
+            background: #ffe082;
+            color: #5d4037;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+        .stats {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .sub-stats {
+            font-size: 14px;
+            color: #795548;
+            margin-bottom: 20px;
+        }
+        #click-btn {
+            background-color: #6f4e37;
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            font-size: 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.1s;
+            margin-bottom: 20px;
+        }
+        #click-btn:active {
+            transform: scale(0.95);
+        }
+        #bonus-btn {
+            display: none;
+            background: linear-gradient(45deg, #ffd700, #ffa000);
+            color: #3e2723;
+            border: 2px solid #ff6f00;
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            margin: 0 auto 20px auto;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .floating-text {
+            position: fixed;
+            font-weight: bold;
+            font-size: 20px;
+            color: #4caf50;
+            pointer-events: none;
+            animation: floatUp 0.8s ease-out forwards;
+        }
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-50px); }
+        }
+        .shop {
+            text-align: left;
+            border-top: 2px solid #efebe9;
+            padding-top: 20px;
+        }
+        .upgrade {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #faf6f4;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            border: 1px solid #d7ccc8;
+        }
+        .upgrade button {
+            background-color: #8d6e63;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .upgrade button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .footer-controls {
+            margin-top: 25px;
+            border-top: 1px solid #efebe9;
+            padding-top: 15px;
+        }
+        #reset-btn {
+            background: none;
+            border: 1px solid #d7ccc8;
+            color: #8d6e63;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        #reset-btn:hover {
+            background: #ffebee;
+            color: #c62828;
+            border-color: #ef9a9a;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>👑 Империя Кофе</h1>
+    <div class="rank-badge">Статус: <span id="rank">Уличный ларек</span></div>
+
+    <div class="stats">Монеты: <span id="coins">0</span> 💰</div>
+    <div class="sub-stats">
+        За клик: <span id="cpc">1</span> | В секунду: <span id="cps">0</span>
+    </div>
+
+    <button id="click-btn" onclick="makeCoffee(event)">Сварить кофе (+<span id="btn-cpc">1</span>)</button>
+    <br>
+    <button id="bonus-btn" onclick="claimBonus()">🌟 VIP-клиент! Забрать чаевые!</button>
+
+    <div class="shop">
+        <h3>Улучшения заведения:</h3>
+        
+        <div class="upgrade">
+            <div>
+                <strong>Новая кофемашина</strong> (Ур. <span id="lvl-machine">0</span>)<br>
+                <small>+1 монета за клик</small>
+            </div>
+            <button id="buy-machine" onclick="buyMachine()">Купить (<span id="cost-machine">15</span>)</button>
+        </div>
+
+        <div class="upgrade">
+            <div>
+                <strong>Нанять бариста</strong> (Шт. <span id="lvl-barista">0</span>)<br>
+                <small>+2 монеты в секунду</small>
+            </div>
+            <button id="buy-barista" onclick="buyBarista()">Купить (<span id="cost-barista">50</span>)</button>
+        </div>
+
+        <div class="upgrade">
+            <div>
+                <strong>Ремонт зала</strong> (Ур. <span id="lvl-interior">0</span>)<br>
+                <small>+5 монет за клик</small>
+            </div>
+            <button id="buy-interior" onclick="buyInterior()">Купить (<span id="cost-interior">200</span>)</button>
+        </div>
+    </div>
+
+    <div class="footer-controls">
+        <button id="reset-btn" onclick="resetGame()">Сбросить прогресс</button>
+    </div>
+</div>
+
+<script>
+    // Начальные значения (используются, если сохранений еще нет)
+    let coins = 0;
+    let coinsPerClick = 1;
+    let coinsPerSecond = 0;
+
+    let machineLvl = 0;
+    let machineCost = 15;
+
+    let baristaLvl = 0;
+    let baristaCost = 50;
+
+    let interiorLvl = 0;
+    let interiorCost = 200;
+
+    // Функция сохранения прогресса в память браузера
+    function saveGame() {
+        const gameData = {
+            coins: coins,
+            coinsPerClick: coinsPerClick,
+            coinsPerSecond: coinsPerSecond,
+            machineLvl: machineLvl,
+            machineCost: machineCost,
+            baristaLvl: baristaLvl,
+            baristaCost: baristaCost,
+            interiorLvl: interiorLvl,
+            interiorCost: interiorCost
+        };
+        localStorage.setItem('coffeeEmpireSave', JSON.stringify(gameData));
+    }
+
+    // Функция загрузки прогресса при открытии страницы
+    function loadGame() {
+        const savedString = localStorage.getItem('coffeeEmpireSave');
+        if (savedString) {
+            const savedData = JSON.parse(savedString);
+            coins = savedData.coins ?? 0;
+            coinsPerClick = savedData.coinsPerClick ?? 1;
+            coinsPerSecond = savedData.coinsPerSecond ?? 0;
+            machineLvl = savedData.machineLvl ?? 0;
+            machineCost = savedData.machineCost ?? 15;
+            baristaLvl = savedData.baristaLvl ?? 0;
+            baristaCost = savedData.baristaCost ?? 50;
+            interiorLvl = savedData.interiorLvl ?? 0;
+            interiorCost = savedData.interiorCost ?? 200;
+        }
+    }
+
+    // Полный сброс игры
+    function resetGame() {
+        if (confirm("Вы уверены, что хотите удалить весь прогресс и начать заново?")) {
+            localStorage.removeItem('coffeeEmpireSave');
+            location.reload();
+        }
+    }
+
+    function makeCoffee(event) {
+        coins += coinsPerClick;
+        showFloatingText(event.clientX, event.clientY, "+" + coinsPerClick);
+        updateUI();
+        saveGame();
+    }
+
+    function showFloatingText(x, y, text) {
+        const el = document.createElement('div');
+        el.className = 'floating-text';
+        el.innerText = text;
+        el.style.left = (x - 10) + 'px';
+        el.style.top = (y - 20) + 'px';
+        document.body.appendChild(el);
+
+        setTimeout(() => {
+            el.remove();
+        }, 800);
+    }
+
+    function buyMachine() {
+        if (coins >= machineCost) {
+            coins -= machineCost;
+            machineLvl++;
+            coinsPerClick += 1;
+            machineCost = Math.round(machineCost * 1.5);
+            updateUI();
+            saveGame();
+        }
+    }
+
+    function buyBarista() {
+        if (coins >= baristaCost) {
+            coins -= baristaCost;
+            baristaLvl++;
+            coinsPerSecond += 2;
+            baristaCost = Math.round(baristaCost * 1.6);
+            updateUI();
+            saveGame();
+        }
+    }
+
+    function buyInterior() {
+        if (coins >= interiorCost) {
+            coins -= interiorCost;
+            interiorLvl++;
+            coinsPerClick += 5;
+            interiorCost = Math.round(interiorCost * 1.8);
+            updateUI();
+            saveGame();
+        }
+    }
+
+    function updateRank() {
+        let rankName = "Уличный ларек";
+        if (coins >= 100) rankName = "Уютная кофейня";
+        if (coins >= 500) rankName = "Кофейня в центре";
+        if (coins >= 2000) rankName = "Сеть кофеен";
+        if (coins >= 10000) rankName = "Мировая империя";
+        document.getElementById('rank').innerText = rankName;
+    }
+
+    function updateUI() {
+        document.getElementById('coins').innerText = coins;
+        document.getElementById('cpc').innerText = coinsPerClick;
+        document.getElementById('btn-cpc').innerText = coinsPerClick;
+        document.getElementById('cps').innerText = coinsPerSecond;
+
+        document.getElementById('lvl-machine').innerText = machineLvl;
+        document.getElementById('cost-machine').innerText = machineCost;
+        document.getElementById('buy-machine').disabled = coins < machineCost;
+
+        document.getElementById('lvl-barista').innerText = baristaLvl;
+        document.getElementById('cost-barista').innerText = baristaCost;
+        document.getElementById('buy-barista').disabled = coins < baristaCost;
+
+document.getElementById('lvl-interior').innerText = interiorLvl;
+document.getElementById('cost-interior').innerText = interiorCost;
+document.getElementById('buy-interior').disabled = coins < interiorCost;
+updateRank();
+}
+// Пассивный доход и автосохранение каждую секунду
+setInterval(function() {
+if (coinsPerSecond > 0) {
+coins += coinsPerSecond;
+updateUI();
+saveGame();
+}
+}, 1000);
+// Появление VIP-клиента каждые 30 секунд
+setInterval(function() {
+const bonusBtn = document.getElementById('bonus-btn');
+bonusBtn.style.display = 'inline-block';
+setTimeout(() => {
+bonusBtn.style.display = 'none';
+}, 7000);
+}, 30000);
+function claimBonus() {
+const bonusAmount = (coinsPerClick * 15) + 20;
+coins += bonusAmount;
+document.getElementById('bonus-btn').style.display = 'none';
+alert("VIP-клиент оставил щедрые чаевые: +" + bonusAmount + " монет!");
+updateUI();
+saveGame();
+}
+// Загружаем сохранение при запуске и обновляем экран
+loadGame();
+updateUI();
+</script>
+
+</body>
+</html>
