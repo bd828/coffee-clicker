@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Империя Кофе 4.0</title>
+<script src="https://telegram.org"></script>
+<style>
+* { box-sizing: border-box; font-family: 'Impact', 'Arial Black', sans-serif; letter-spacing: 0.5px; }
+body { background: radial-gradient(circle at 50% 20%, rgba(255,213,153,0.25), transparent 60%), repeating-linear-gradient(45deg, #2c1810 0px, #2c1810 20px, #23120b 20px, #23120b 40px); color: #f5ebe0; text-align: center; margin: 0; padding: 12px; min-height: 100vh; user-select: none; overflow-x: hidden; }
+#menu-toggle { position: fixed; top: 12px; right: 12px; background: #d4a373; color: #2c1810; border: 3px solid #faedcd; padding: 8px 14px; font-size: 15px; border-radius: 12px; cursor: pointer; z-index: 1000; }
+#side-menu { position: fixed; top: 0; right: -320px; width: 300px; height: 100%; background: #1b0f0a; border-left: 4px solid #d4a373; padding: 65px 15px 20px; transition: right 0.3s; z-index: 999; text-align: left; overflow-y: auto; }
+#side-menu.open { right: 0; }
+.menu-section { background: #2c1810; border: 2px solid #6f4e37; border-radius: 10px; padding: 10px; margin-bottom: 12px; }
+.menu-section h3 { margin: 0 0 8px; color: #d4a373; font-size: 17px; border-bottom: 1px solid #6f4e37; padding-bottom: 4px; }
+.stat-line { font-size: 14px; margin: 5px 0; color: #faedcd; }
+.menu-btn { width: 100%; padding: 10px; margin-top: 6px; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; background: #6f4e37; color: #fff; }
+.menu-btn.prestige { background: linear-gradient(45deg, #ff8f00, #ffd700); color: #2c1810; border: 2px solid #fff; }
+.menu-btn.danger { background: #9e2a2b; }
+.container { max-width: 520px; margin: 42px auto 15px; background: #3d251e; padding: 18px; border-radius: 20px; border: 4px solid #d4a373; box-shadow: 0 10px 30px rgba(0,0,0,0.7); position: relative; }
+.cafe-visual { background: linear-gradient(180deg, #5c3a2e 0%, #2c1810 100%); border: 3px solid #d4a373; border-radius: 15px; padding: 10px; margin-bottom: 10px; }
+#cafe-icon { font-size: 44px; display: block; }
+.rank-badge { background: #d4a373; color: #2c1810; padding: 3px 12px; border-radius: 20px; font-size: 14px; display: inline-block; margin-top: 4px; }
+.currencies { display: flex; justify-content: center; gap: 15px; margin: 8px 0 4px; font-size: 24px; text-shadow: 2px 2px 0 #1b0f0a; }
+.coins-color { color: #ffd700; } .gems-color { color: #4fc3f7; } .stars-color { color: #ffab40; }
+.sub-stats { font-size: 14px; color: #e6ccb2; margin-bottom: 10px; }
+.combo-bar-bg { width: 100%; height: 10px; background: #1b0f0a; border-radius: 10px; border: 2px solid #6f4e37; overflow: hidden; margin-bottom: 10px; }
+#combo-fill { width: 0%; height: 100%; background: linear-gradient(90deg, #ff9800, #ff3d00); transition: width 0.1s; }
+.fever-active { animation: feverGlow 0.5s infinite alternate; }
+@keyframes feverGlow { from { box-shadow: 0 0 10px #ff9800; } to { box-shadow: 0 0 25px #ff3d00, 0 0 40px #ffd700; } }
+#click-btn { background: linear-gradient(180deg, #d4a373 0%, #9c6644 100%); color: #2c1810; border: 4px solid #faedcd; padding: 15px; font-size: 21px; border-radius: 50px; cursor: pointer; box-shadow: 0 5px 0 #582f0e; margin-bottom: 10px; width: 100%; }
+#click-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #582f0e; }
+.grid-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.action-btn { padding: 10px 6px; font-size: 14px; border-radius: 12px; border: 2px solid #faedcd; cursor: pointer; color: #fff; }
+.btn-chat { background: #1976d2; } .btn-game { background: #7b1fa2; } .btn-battle { background: #d32f2f; } .btn-wheel { background: #00897b; }
+#crisis-box { display: none; background: #b71c1c; border: 3px solid #ffd700; border-radius: 14px; padding: 12px; margin-bottom: 10px; animation: shake 0.4s infinite; }
+@keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+.pest-btn { font-size: 32px; background: #fff; border: 2px solid #000; border-radius: 50%; width: 52px; height: 52px; margin: 5px; cursor: pointer; }
+.tabs { display: flex; gap: 8px; margin-bottom: 10px; border-top: 3px dashed #6f4e37; padding-top: 10px; }
+.tab-btn { flex: 1; padding: 9px; font-size: 15px; border-radius: 10px; border: 2px solid #6f4e37; background: #2c1810; color: #d4a373; cursor: pointer; }
+.tab-btn.active { background: #d4a373; color: #2c1810; border-color: #faedcd; }
+.shop-section { display: none; text-align: left; } .shop-section.active { display: block; }
+.upgrade { display: flex; justify-content: space-between; align-items: center; background: #2c1810; padding: 10px; margin-bottom: 8px; border-radius: 12px; border: 2px solid #6f4e37; }
+.upgrade-info strong { font-size: 16px; color: #faedcd; } .upgrade-info small { color: #d4a373; font-size: 12px; }
+.upgrade button { background: #588157; color: #fff; border: 2px solid #a3b18a; padding: 8px 10px; border-radius: 10px; cursor: pointer; font-size: 14px; min-width: 105px; }
+.upgrade button.gem-buy { background: #0288d1; border-color: #81d4fa; }
+.upgrade button:disabled { background: #4a3b36; border-color: #6d5952; color: #8d7b74; cursor: not-allowed; }
+.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.88); z-index: 3000; justify-content: center; align-items: center; padding: 15px; }
+.modal-box { background: #3d251e; border: 4px solid #d4a373; border-radius: 20px; padding: 18px; max-width: 420px; width: 100%; text-align: center; }
+.npc-text { background: #2c1810; padding: 10px; border-radius: 12px; border: 2px solid #6f4e37; margin: 8px 0; font-size: 15px; color: #faedcd; }
+.dialog-opt { display: block; width: 100%; padding: 10px; margin: 6px 0; background: #6f4e37; color: #fff; border: 2px solid #d4a373; border-radius: 10px; font-size: 14px; cursor: pointer; }
+.ing-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin: 10px 0; }
+.ing-btn { padding: 10px 4px; background: #2c1810; color: #ffd700; border: 2px solid #d4a373; border-radius: 10px; font-size: 13px; cursor: pointer; }
+.bar-wrap { width: 100%; height: 18px; background: #1b0f0a; border: 2px solid #fff; border-radius: 10px; overflow: hidden; margin: 6px 0; }
+.bar-fill { height: 100%; width: 0%; transition: width 0.1s; }
+.floating-text { position: fixed; font-size: 20px; color: #ffd700; text-shadow: 2px 2px 0 #000; pointer-events: none; z-index: 4000; animation: floatUp 0.8s ease-out forwards; }
+@keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-50px); } }
+</style>
+</head>
+<body>
+<button id="menu-toggle" onclick="toggleMenu()">☰ МЕНЮ</button>
+<div id="side-menu">
+    <div class="menu-section">
+        <h3>⭐ ПРЕСТИЖ (ПЕРЕРОЖДЕНИЕ)</h3>
+        <div class="stat-line">Золотые зерна: <span id="stat-stars">0</span> ⭐</div>
+        <div class="stat-line">Бонус дохода: x<span id="stat-mult">1</span></div>
+        <div style="font-size:12px; color:#d4a373; margin-top:4px;">Требуется 50 000 монет. Сбросит монеты и здания, но даст +1 ⭐ (навсегда +100% к доходу за звезду).</div>
+        <button class="menu-btn prestige" onclick="doPrestige()">🌟 ПЕРЕРОДИТЬ БИЗНЕС</button>
+    </div>
+    <div class="menu-section">
+        <h3>📊 СТАТИСТИКА</h3>
+        <div class="stat-line">Кликов: <span id="stat-clicks">0</span></div>
+        <div class="stat-line">Побед в баттлах: <span id="stat-wins">0</span> 🏆</div>
+    </div>
+    <div class="menu-section">
+        <h3>⚙️ НАСТРОЙКИ</h3>
+        <button class="menu-btn" id="sound-btn" onclick="toggleSound()">🔊 ЗВУК: ВКЛ</button>
+        <button class="menu-btn danger" onclick="resetGame()">🗑️ ПОЛНЫЙ СБРОС</button>
+    </div>
+</div>
+
+<div class="container" id="main-card">
+    <h1 style="margin: 0 0 8px; font-size: 26px; color: #faedcd;">👑 ИМПЕРИЯ КОФЕ 4.0</h1>
+    <div class="cafe-visual">
+        <span id="cafe-icon">🛒</span>
+        <div class="rank-badge">УРОВЕНЬ: <span id="rank">Уличный ларек</span></div>
+    </div>
+    <div class="currencies">
+        <div class="coins-color"><span id="coins">0</span> 💰</div>
+        <div class="gems-color"><span id="gems">0</span> 💎</div>
+        <div class="stars-color"><span id="stars">0</span> ⭐</div>
+    </div>
+    <div class="sub-stats">ЗА КЛИК: <span id="cpc">1</span> | В СЕК: <span id="cps">0</span> | МНОЖИТЕЛЬ: x<span id="mult-view">1</span></div>
+
+    <div id="crisis-box">
+        <div id="crisis-title" style="font-size:17px; color:#ffd700;">🚨 ПРОВЕРКА СЭС! РАЗДАВИ ТАРАКАНОВ!</div>
+        <div id="crisis-area" style="margin-top:8px;"></div>
+    </div>
+
+    <div class="combo-bar-bg"><div id="combo-fill"></div></div>
+    <button id="click-btn" onclick="makeCoffee(event)">☕ СВАРИТЬ КОФЕ (+<span id="btn-cpc">1</span> 💰)</button>
+
+    <div class="grid-btns">
+        <button class="action-btn btn-chat" onclick="openDialog()">💬 ПОСЕТИТЕЛЬ (+💎)</button>
+        <button class="action-btn btn-game" onclick="openBaristaGame()">🍹 СБОРКА ЗАКАЗА</button>
+        <button class="action-btn btn-battle" onclick="openBattle()">⚔️ БИТВА КОФЕЕН</button>
+        <button class="action-btn btn-wheel" onclick="openWheel()">🎡 РУЛЕТКА (3 💎)</button>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" id="tab-cafe" onclick="switchTab('cafe')">🛠️ КОФЕЙНЯ (💰)</button>
+        <button class="tab-btn" id="tab-estate" onclick="switchTab('estate')">🏢 ИМУЩЕСТВО (💎)</button>
+    </div>
+
+    <div class="shop-section active" id="shop-cafe">
+        <div class="upgrade"><div class="upgrade-info"><strong>КОФЕМАШИНА</strong> (УР. <span id="lvl-machine">0</span>)<br><small>+1 база за клик</small></div><button id="buy-machine" onclick="buyMachine()">КУПИТЬ (<span id="cost-machine">15</span> 💰)</button></div>
+        <div class="upgrade"><div class="upgrade-info"><strong>БАРИСТА</strong> (ШТ. <span id="lvl-barista">0</span>)<br><small>+2 база в сек</small></div><button id="buy-barista" onclick="buyBarista()">КУПИТЬ (<span id="cost-barista">50</span> 💰)</button></div>
+        <div class="upgrade"><div class="upgrade-info"><strong>РЕМОНТ ЗАЛА</strong> (УР. <span id="lvl-interior">0</span>)<br><small>+5 база за клик</small></div><button id="buy-interior" onclick="buyInterior()">КУПИТЬ (<span id="cost-interior">200</span> 💰)</button></div>
+        <div class="upgrade"><div class="upgrade-info"><strong>ОБЖАРОЧНЫЙ ЦЕХ</strong> (ШТ. <span id="lvl-roaster">0</span>)<br><small>+15 база в сек</small></div><button id="buy-roaster" onclick="buyRoaster()">КУПИТЬ (<span id="cost-roaster">600</span> 💰)</button></div>
+    </div>
+
+    <div class="shop-section" id="shop-estate">
+        <div class="upgrade"><div class="upgrade-info"><strong>УЛИЧНЫЙ КИОСК</strong> (ШТ. <span id="lvl-kiosk">0</span>)<br><small>+50 база в сек</small></div><button class="gem-buy" id="buy-kiosk" onclick="buyKiosk()">КУПИТЬ (<span id="cost-kiosk">5</span> 💎)</button></div>
+        <div class="upgrade"><div class="upgrade-info"><strong>СВОЯ ПЕКАРНЯ</strong> (ШТ. <span id="lvl-bakery">0</span>)<br><small>+200 база в сек</small></div><button class="gem-buy" id="buy-bakery" onclick="buyBakery()">КУПИТЬ (<span id="cost-bakery">15</span> 💎)</button></div>
+        <div class="upgrade"><div class="upgrade-info"><strong>ТОРГОВЫЙ ЦЕНТР</strong> (ШТ. <span id="lvl-mall">0</span>)<br><small>+1000 база в сек</small></div><button class="gem-buy" id="buy-mall" onclick="buyMall()">КУПИТЬ (<span id="cost-mall">40</span> 💎)</button></div>
+    </div>
+</div>
+
+<div class="modal" id="dialog-modal"><div class="modal-box"><div id="npc-icon" style="font-size:50px;">🧑‍🎓</div><h3 id="npc-name" style="margin:4px 0; color:#ffd700;">Гость</h3><div class="npc-text" id="npc-question">Вопрос</div><div id="npc-options"></div><button class="menu-btn danger" style="margin-top:10px;" onclick="closeModals()">УЙТИ</button></div></div>
+
+<div class="modal" id="barista-modal"><div class="modal-box"><h3 style="margin:0; color:#ffd700;">🍹 СОБЕРИ ЗАКАЗ (<span id="barista-timer">8</span>с)</h3><div class="npc-text" id="recipe-target">Заказ: ...</div><div style="font-size:14px; color:#4fc3f7;">Собрано: <span id="recipe-current">Пусто</span></div><div class="ing-grid" id="ing-buttons"></div><button class="menu-btn danger" onclick="closeModals()">ОТМЕНА</button></div></div>
+
+<div class="modal" id="battle-modal"><div class="modal-box"><h3 style="margin:0; color:#ffd700;">⚔️ БИТВА С КОНКУРЕНТОМ!</h3><div style="font-size:14px; margin:6px 0;">Сделай 45 кликов быстрее «Старбакс-Бота»! Награда: +4 💎</div><div>ТЫ: <span id="my-battle-score">0</span> / 45</div><div class="bar-wrap"><div class="bar-fill" id="my-battle-bar" style="background:#4caf50;"></div></div><div>КОНКУРЕНТ: <span id="bot-battle-score">0</span> / 45</div><div class="bar-wrap"><div class="bar-fill" id="bot-battle-bar" style="background:#f44336;"></div></div><button id="battle-tap-btn" style="width:100%; padding:18px; font-size:22px; background:#ffd700; color:#000; border-radius:15px; border:none; margin-top:10px; cursor:pointer;" onclick="tapBattle()">⚡ КЛИКАЙ СЮДА! ⚡</button><button class="menu-btn danger" style="margin-top:10px;" onclick="closeModals()">СДАТЬСЯ</button></div></div>
+
+<div class="modal" id="wheel-modal"><div class="modal-box"><h3 style="margin:0; color:#ffd700;">🎡 КОЛЕСО ФОРТУНЫ</h3><div id="wheel-display" style="font-size:55px; margin:15px 0;">🎰</div><div id="wheel-result" style="font-size:16px; color:#faedcd; min-height:24px;">Ставка: 3 💎</div><button id="spin-btn" class="menu-btn prestige" style="margin-top:12px;" onclick="spinWheel()">КРУТИТЬ ЗА 3 💎</button><button class="menu-btn danger" style="margin-top:8px;" onclick="closeModals()">ЗАКРЫТЬ</button></div></div>
+<script>
+if (window.Telegram && window.Telegram.WebApp) { window.Telegram.WebApp.expand(); }
+let coins = 0, gems = 0, stars = 0, totalClicks = 0, battleWins = 0, baseCpc = 1, baseCps = 0;
+let machineLvl = 0, machineCost = 15, baristaLvl = 0, baristaCost = 50, interiorLvl = 0, interiorCost = 200, roasterLvl = 0, roasterCost = 600;
+let kioskLvl = 0, kioskCost = 5, bakeryLvl = 0, bakeryCost = 15, mallLvl = 0, mallCost = 40;
+let soundEnabled = true, comboValue = 0, isFeverMode = false, isBroken = false;
+
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function playSound(f, d) {
+    if (!soundEnabled) return;
+    try {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+        o.type = 'triangle'; o.frequency.setValueAtTime(f, audioCtx.currentTime);
+        g.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + d);
+        o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + d);
+    } catch (e) {}
+}
+
+function getMult() { return (1 + stars) * (isFeverMode ? 2 : 1); }
+function toggleMenu() { document.getElementById('side-menu').classList.toggle('open'); playSound(400, 0.1); }
+function toggleSound() { soundEnabled = !soundEnabled; document.getElementById('sound-btn').innerText = soundEnabled ? "🔊 ЗВУК: ВКЛ" : "🔇 ЗВУК: ВЫКЛ"; saveGame(); }
+function switchTab(t) {
+    document.getElementById('tab-cafe').classList.toggle('active', t === 'cafe');
+    document.getElementById('tab-estate').classList.toggle('active', t === 'estate');
+    document.getElementById('shop-cafe').classList.toggle('active', t === 'cafe');
+    document.getElementById('shop-estate').classList.toggle('active', t === 'estate');
+}
+
+function saveGame() {
+    localStorage.setItem('coffeeEmpireV4', JSON.stringify({
+        coins, gems, stars, totalClicks, battleWins, baseCpc, baseCps,
+        machineLvl, machineCost, baristaLvl, baristaCost, interiorLvl, interiorCost, roasterLvl, roasterCost,
+        kioskLvl, kioskCost, bakeryLvl, bakeryCost, mallLvl, mallCost, soundEnabled
+    }));
+}
+
+function loadGame() {
+    const s = localStorage.getItem('coffeeEmpireV4');
+    if (s) {
+        const d = JSON.parse(s);
+        coins = d.coins ?? 0; gems = d.gems ?? 0; stars = d.stars ?? 0; totalClicks = d.totalClicks ?? 0; battleWins = d.battleWins ?? 0;
+        baseCpc = d.baseCpc ?? 1; baseCps = d.baseCps ?? 0;
+        machineLvl = d.machineLvl ?? 0; machineCost = d.machineCost ?? 15; baristaLvl = d.baristaLvl ?? 0; baristaCost = d.baristaCost ?? 50;
+        interiorLvl = d.interiorLvl ?? 0; interiorCost = d.interiorCost ?? 200; roasterLvl = d.roasterLvl ?? 0; roasterCost = d.roasterCost ?? 600;
+        kioskLvl = d.kioskLvl ?? 0; kioskCost = d.kioskCost ?? 5; bakeryLvl = d.bakeryLvl ?? 0; bakeryCost = d.bakeryCost ?? 15;
+        mallLvl = d.mallLvl ?? 0; mallCost = d.mallCost ?? 40; soundEnabled = d.soundEnabled ?? true;
+        document.getElementById('sound-btn').innerText = soundEnabled ? "🔊 ЗВУК: ВКЛ" : "🔇 ЗВУК: ВЫКЛ";
+    }
+}
+
+function resetGame() { if (confirm("Удалить ВСЁ включая Звезды Престижа?")) { localStorage.removeItem('coffeeEmpireV4'); location.reload(); } }
+
+function doPrestige() {
+    if (coins < 50000) { alert("Нужно накопить минимум 50 000 💰 для перерождения бизнеса!"); return; }
+    if (confirm("Продать сеть за 1 Золотое Зерно ⭐? Монеты и здания сбросятся, но доход навсегда вырастет!")) {
+        stars++; coins = 0; baseCpc = 1; baseCps = 0;
+        machineLvl = 0; machineCost = 15; baristaLvl = 0; baristaCost = 50; interiorLvl = 0; interiorCost = 200; roasterLvl = 0; roasterCost = 600;
+        kioskLvl = 0; kioskCost = 5; bakeryLvl = 0; bakeryCost = 15; mallLvl = 0; mallCost = 40;
+        playSound(950, 0.4); saveGame(); updateUI(); toggleMenu();
+    }
+}
+
+function makeCoffee(e) {
+    if (isBroken) { alert("🚨 Сначала разберись с проблемой в красной рамке!"); return; }
+    let earned = baseCpc * getMult();
+    coins += earned; totalClicks++;
+    playSound(isFeverMode ? 650 : 480, 0.08);
+    showFloatingText(e.clientX, e.clientY, "+" + earned + (isFeverMode ? " 🔥" : ""));
+    if (!isFeverMode) {
+        comboValue = Math.min(100, comboValue + 9);
+        if (comboValue >= 100) {
+            isFeverMode = true; document.getElementById('main-card').classList.add('fever-active');
+            setTimeout(function() { isFeverMode = false; comboValue = 0; document.getElementById('main-card').classList.remove('fever-active'); updateUI(); }, 9000);
+        }
+    }
+    updateUI(); saveGame();
+}
+
+function showFloatingText(x, y, t) {
+    const el = document.createElement('div'); el.className = 'floating-text'; el.innerText = t;
+    el.style.left = (x - 15) + 'px'; el.style.top = (y - 25) + 'px';
+    document.body.appendChild(el); setTimeout(function() { el.remove(); }, 800);
+}
+
+function buyMachine() { if (coins >= machineCost) { coins -= machineCost; machineLvl++; baseCpc += 1; machineCost = Math.round(machineCost * 1.5); playSound(600, 0.15); updateUI(); saveGame(); } }
+function buyBarista() { if (coins >= baristaCost) { coins -= baristaCost; baristaLvl++; baseCps += 2; baristaCost = Math.round(baristaCost * 1.6); playSound(600, 0.15); updateUI(); saveGame(); } }
+function buyInterior() { if (coins >= interiorCost) { coins -= interiorCost; interiorLvl++; baseCpc += 5; interiorCost = Math.round(interiorCost * 1.75); playSound(600, 0.15); updateUI(); saveGame(); } }
+function buyRoaster() { if (coins >= roasterCost) { coins -= roasterCost; roasterLvl++; baseCps += 15; roasterCost = Math.round(roasterCost * 1.7); playSound(600, 0.15); updateUI(); saveGame(); } }
+function buyKiosk() { if (gems >= kioskCost) { gems -= kioskCost; kioskLvl++; baseCps += 50; kioskCost += 3; playSound(850, 0.2); updateUI(); saveGame(); } }
+function buyBakery() { if (gems >= bakeryCost) { gems -= bakeryCost; bakeryLvl++; baseCps += 200; bakeryCost += 8; playSound(850, 0.2); updateUI(); saveGame(); } }
+function buyMall() { if (gems >= mallCost) { gems -= mallCost; mallLvl++; baseCps += 1000; mallCost += 20; playSound(850, 0.2); updateUI(); saveGame(); } }
+
+function triggerCrisis() {
+    if (isBroken) return;
+    isBroken = true;
+    const box = document.getElementById('crisis-box'), area = document.getElementById('crisis-area'), title = document.getElementById('crisis-title');
+    box.style.display = 'block'; area.innerHTML = "";
+    if (Math.random() < 0.5) {
+        title.innerText = "🚨 СЭС НА ПОРОГЕ! РАЗДАВИ 3 ТАРАКАНОВ!";
+        let left = 3;
+        for (let i = 0; i < 3; i++) {
+            const btn = document.createElement('button'); btn.className = 'pest-btn'; btn.innerText = "🪳";
+            btn.onclick = function() { btn.remove(); left--; playSound(300, 0.1); if (left <= 0) { isBroken = false; box.style.display = 'none'; gems += 1; alert("✅ Чисто! СЭС ушла, а ты нашел 1 💎!"); updateUI(); saveGame(); } };
+            area.appendChild(btn);
+        }
+    } else {
+        title.innerText = "💥 КОФЕМАШИНА ЗАДЫМИЛАСЬ! ЖМИ КЛЮЧ 8 РАЗ!";
+        let taps = 8;
+        const btn = document.createElement('button'); btn.className = 'menu-btn prestige'; btn.innerText = "🔧 ПОЧИНИТЬ (" + taps + ")";
+        btn.onclick = function() { taps--; btn.innerText = "🔧 ПОЧИНИТЬ (" + taps + ")"; playSound(500, 0.08); if (taps <= 0) { isBroken = false; box.style.display = 'none'; alert("✅ Кофемашина снова работает!"); } };
+        area.appendChild(btn);
+    }
+}
+
+const customers = [
+    { icon: "🧑‍🎓", name: "Сонный студент", q: "Экзамен через 15 минут! Что взять?", opts: [{ t: "Двойной эспрессо без сахара", reward: 3, msg: "Проснулся! Держи 3 💎" }, { t: "Теплое молоко", reward: 1, msg: "Чуть не уснул... Вот 1 💎" }] },
+    { icon: "💼", name: "Инвестор", q: "Нужно произвести впечатление на партнеров!", opts: [{ t: "Редкий сорт Гейша", reward: 4, msg: "Сделка в кармане! Твои 4 💎" }, { t: "Растворимый кофе", reward: 0, msg: "Ужас! Я ухожу..." }] },
+    { icon: "🧐", name: "Критик", q: "Какая обжарка лучше для фильтра?", opts: [{ t: "Светлая обжарка", reward: 5, msg: "Браво, профи! Награда 5 💎" }, { t: "Самая темная", reward: 0, msg: "Вы испортили зерно..." }] }
+];
+
+function openDialog() {
+    const c = customers[Math.floor(Math.random() * customers.length)];
+    document.getElementById('npc-icon').innerText = c.icon; document.getElementById('npc-name').innerText = c.name; document.getElementById('npc-question').innerText = c.q;
+    const box = document.getElementById('npc-options'); box.innerHTML = "";
+    c.opts.forEach(function(o) {
+        const btn = document.createElement('button'); btn.className = 'dialog-opt'; btn.innerText = o.t;
+        btn.onclick = function() { gems += o.reward; playSound(750, 0.2); alert(o.msg); closeModals(); updateUI(); saveGame(); };
+        box.appendChild(btn);
+    });
+    document.getElementById('dialog-modal').style.display = 'flex';
+}
+
+let modalTimer;
+function openBaristaGame() {
+    const ings = ["☕ Эспрессо", "🥛 Молоко", "🍯 Карамель", "🍫 Шоколад", "🧊 Лед", "🌿 Мята"];
+    let target = [], current = [], timeLeft = 8;
+    for (let i = 0; i < 3; i++) target.push(ings[Math.floor(Math.random() * ings.length)]);
+    document.getElementById('recipe-target').innerText = "Заказ: " + target.join(" + ");
+    document.getElementById('recipe-current').innerText = "Пусто";
+    document.getElementById('barista-timer').innerText = timeLeft;
+    const grid = document.getElementById('ing-buttons'); grid.innerHTML = "";
+    ings.forEach(function(item) {
+        const b = document.createElement('button'); b.className = 'ing-btn'; b.innerText = item;
+        b.onclick = function() {
+            current.push(item); document.getElementById('recipe-current').innerText = current.join(" + "); playSound(550, 0.08);
+            if (current.length === 3) {
+                closeModals();
+</script>
+
+</body>
+</html>
