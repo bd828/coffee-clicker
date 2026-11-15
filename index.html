@@ -3,406 +3,558 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Империя Кофе</title>
+    <title>Империя Кофе 2.0</title>
     <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Impact', 'Arial Black', sans-serif;
+            letter-spacing: 0.5px;
+        }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4ece6;
-            color: #3e2723;
+            /* Атмосферный фон кофейни (темное дерево и теплый свет ламп) */
+            background: 
+                radial-gradient(circle at 50% 20%, rgba(255, 213, 153, 0.25), transparent 60%),
+                repeating-linear-gradient(45deg, #2c1810 0px, #2c1810 20px, #23120b 20px, #23120b 40px);
+            color: #f5ebe0;
             text-align: center;
             margin: 0;
             padding: 15px;
+            min-height: 100vh;
             user-select: none;
+            overflow-x: hidden;
         }
+
+        /* Кнопка меню в правом верхнем углу */
+        #menu-toggle {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            background: #d4a373;
+            color: #2c1810;
+            border: 3px solid #faedcd;
+            padding: 10px 18px;
+            font-size: 18px;
+            border-radius: 12px;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            transition: transform 0.1s, background 0.2s;
+        }
+        #menu-toggle:hover {
+            background: #faedcd;
+            transform: scale(1.05);
+        }
+
+        /* Выдвижная панель меню */
+        #side-menu {
+            position: fixed;
+            top: 0;
+            right: -320px;
+            width: 300px;
+            height: 100%;
+            background: #1b0f0a;
+            border-left: 4px solid #d4a373;
+            padding: 70px 20px 20px 20px;
+            box-shadow: -5px 0 25px rgba(0,0,0,0.8);
+            transition: right 0.3s ease;
+            z-index: 999;
+            text-align: left;
+            overflow-y: auto;
+        }
+        #side-menu.open {
+            right: 0;
+        }
+        .menu-section {
+            background: #2c1810;
+            border: 2px solid #6f4e37;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 15px;
+        }
+        .menu-section h3 {
+            margin: 0 0 10px 0;
+            color: #d4a373;
+            font-size: 18px;
+            border-bottom: 1px solid #6f4e37;
+            padding-bottom: 5px;
+        }
+        .stat-line {
+            font-size: 15px;
+            margin: 6px 0;
+            color: #faedcd;
+        }
+        .achievement {
+            font-size: 14px;
+            padding: 6px;
+            margin: 5px 0;
+            border-radius: 6px;
+            background: #1b0f0a;
+            color: #795548;
+            border: 1px dashed #5d4037;
+        }
+        .achievement.unlocked {
+            color: #ffd700;
+            border: 1px solid #ffd700;
+            background: rgba(255, 215, 0, 0.1);
+        }
+        .menu-btn {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            background: #6f4e37;
+            color: #fff;
+        }
+        .menu-btn.danger {
+            background: #9e2a2b;
+        }
+
+        /* Основной контейнер кофейни */
         .container {
             max-width: 520px;
-            margin: 0 auto;
-            background: #fff;
+            margin: 45px auto 20px auto;
+            background: #3d251e;
             padding: 25px;
-            border-radius: 18px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+            border-radius: 20px;
+            border: 4px solid #d4a373;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+            position: relative;
         }
+
+        /* Витрина заведения */
         .cafe-visual {
-            font-size: 64px;
-            margin: 10px 0;
-            padding: 15px;
-            background: linear-gradient(180deg, #fff8e1 0%, #f5ebe0 100%);
+            background: linear-gradient(180deg, #5c3a2e 0%, #2c1810 100%);
+            border: 3px solid #d4a373;
             border-radius: 15px;
-            border: 2px dashed #d7ccc8;
-            transition: transform 0.2s;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        #cafe-icon {
+            font-size: 54px;
+            display: block;
+            margin-bottom: 5px;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
         }
         .rank-badge {
-            background: #ffe082;
-            color: #5d4037;
-            padding: 6px 16px;
+            background: #d4a373;
+            color: #2c1810;
+            padding: 4px 16px;
             border-radius: 20px;
-            font-size: 14px;
-            font-weight: bold;
+            font-size: 16px;
             display: inline-block;
-            margin-bottom: 12px;
         }
+
         .stats {
-            font-size: 28px;
-            font-weight: bold;
-            margin-bottom: 6px;
+            font-size: 32px;
+            color: #ffd700;
+            text-shadow: 2px 2px 0 #1b0f0a;
+            margin: 10px 0 5px 0;
         }
         .sub-stats {
-            font-size: 14px;
-            color: #795548;
-            margin-bottom: 20px;
+            font-size: 16px;
+            color: #e6ccb2;
+            margin-bottom: 15px;
         }
+
+        /* Шкала Комбо (Счастливый час) */
+        .combo-wrapper {
+            margin-bottom: 15px;
+        }
+        .combo-label {
+            font-size: 14px;
+            color: #faedcd;
+            margin-bottom: 4px;
+        }
+        .combo-bar-bg {
+            width: 100%;
+            height: 14px;
+            background: #1b0f0a;
+            border-radius: 10px;
+            border: 2px solid #6f4e37;
+            overflow: hidden;
+        }
+        #combo-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #ff9800, #ff3d00);
+            transition: width 0.1s;
+        }
+        .fever-active {
+            animation: feverGlow 0.5s infinite alternate;
+        }
+        @keyframes feverGlow {
+            from { box-shadow: 0 0 10px #ff9800; }
+            to { box-shadow: 0 0 25px #ff3d00, 0 0 40px #ffd700; }
+        }
+
+        /* Главная кнопка клика */
         #click-btn {
-            background: linear-gradient(180deg, #795548, #5d4037);
-            color: white;
-            border: none;
+            background: linear-gradient(180deg, #d4a373 0%, #9c6644 100%);
+            color: #2c1810;
+            border: 4px solid #faedcd;
             padding: 18px 36px;
-            font-size: 20px;
-            font-weight: bold;
+            font-size: 24px;
             border-radius: 50px;
             cursor: pointer;
-            box-shadow: 0 4px 10px rgba(93, 64, 55, 0.3);
-            transition: transform 0.1s;
+            box-shadow: 0 6px 0 #582f0e, 0 10px 20px rgba(0,0,0,0.5);
+            transition: transform 0.05s, box-shadow 0.05s;
             margin-bottom: 15px;
-            width: 100%;
-            max-width: 300px;
         }
         #click-btn:active {
-            transform: scale(0.95);
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #582f0e, 0 4px 10px rgba(0,0,0,0.5);
         }
+
+        /* VIP-бонус */
         #bonus-btn {
             display: none;
-            background: linear-gradient(45deg, #ffd700, #ffa000);
-            color: #3e2723;
-            border: 2px solid #ff6f00;
-            padding: 12px 25px;
-            font-size: 16px;
-            font-weight: bold;
+            background: linear-gradient(45deg, #ffd700, #ff8f00);
+            color: #2c1810;
+            border: 3px solid #fff;
+            padding: 10px 22px;
+            font-size: 18px;
             border-radius: 30px;
             cursor: pointer;
-            margin: 0 auto 15px auto;
-            animation: pulse 1s infinite;
+            margin: 5px auto 15px auto;
+            animation: pulse 0.8s infinite;
         }
         @keyframes pulse {
             0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+            50% { transform: scale(1.08); }
             100% { transform: scale(1); }
         }
+
+        /* Всплывающие цифры */
         .floating-text {
             position: fixed;
-            font-weight: bold;
-            font-size: 20px;
-            color: #2e7d32;
+            font-size: 24px;
+            color: #ffd700;
+            text-shadow: 2px 2px 0 #000;
             pointer-events: none;
+            z-index: 2000;
             animation: floatUp 0.8s ease-out forwards;
-            z-index: 100;
         }
         @keyframes floatUp {
-            0% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(-50px); }
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-60px) scale(1.3); }
         }
-        .section {
+
+        /* Магазин улучшений */
+        .shop {
             text-align: left;
-            border-top: 2px solid #efebe9;
+            border-top: 3px dashed #6f4e37;
             padding-top: 15px;
-            margin-top: 15px;
+        }
+        .shop h3 {
+            margin: 0 0 12px 0;
+            color: #faedcd;
+            font-size: 22px;
+            text-align: center;
         }
         .upgrade {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: #faf6f4;
+            background: #2c1810;
             padding: 12px 15px;
             margin-bottom: 10px;
-            border-radius: 10px;
-            border: 1px solid #d7ccc8;
+            border-radius: 12px;
+            border: 2px solid #6f4e37;
+        }
+        .upgrade-info strong {
+            font-size: 18px;
+            color: #faedcd;
+        }
+        .upgrade-info small {
+            color: #d4a373;
+            font-size: 14px;
         }
         .upgrade button {
-            background-color: #8d6e63;
-            color: white;
-            border: none;
+            background: #588157;
+            color: #fff;
+            border: 2px solid #a3b18a;
             padding: 10px 14px;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
-            font-weight: bold;
-            min-width: 110px;
+            font-size: 16px;
+            min-width: 115px;
         }
         .upgrade button:disabled {
-            background-color: #ccc;
+            background: #4a3b36;
+            border-color: #6d5952;
+            color: #8d7b74;
             cursor: not-allowed;
-        }
-        .achievements-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-        }
-        .ach-card {
-            background: #f5f5f5;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 10px;
-            font-size: 13px;
-            opacity: 0.5;
-            transition: all 0.3s;
-        }
-        .ach-card.unlocked {
-            background: #e8f5e9;
-            border-color: #81c784;
-            opacity: 1;
-            font-weight: bold;
-        }
-        .footer-controls {
-            margin-top: 25px;
-            border-top: 1px solid #efebe9;
-            padding-top: 15px;
-        }
-        #reset-btn {
-            background: none;
-            border: 1px solid #d7ccc8;
-            color: #8d6e63;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            cursor: pointer;
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>👑 Империя Кофе</h1>
-    <div class="cafe-visual" id="cafe-visual">🥤</div>
-    <div class="rank-badge">Статус: <span id="rank">Уличный ларек</span></div>
+<!-- Кнопка открытия меню в правом верхнем углу -->
+<button id="menu-toggle" onclick="toggleMenu()">☰ МЕНЮ</button>
 
-    <div class="stats">Монеты: <span id="coins">0</span> 💰</div>
-    <div class="sub-stats">
-        За клик: <span id="cpc">1</span> | В секунду: <span id="cps">0</span> | Всего кликов: <span id="total-clicks">0</span>
+<!-- Выдвижное боковое меню -->
+<div id="side-menu">
+    <div class="menu-section">
+        <h3>📊 СТАТИСТИКА</h3>
+        <div class="stat-line">Всего кликов: <span id="stat-clicks">0</span></div>
+        <div class="stat-line">Всего заработано: <span id="stat-total-coins">0</span> 💰</div>
     </div>
 
-    <button id="click-btn" onclick="makeCoffee(event)">Сварить кофе (+<span id="btn-cpc">1</span>)</button>
-    <br>
-    <button id="bonus-btn" onclick="claimBonus()">🌟 VIP-клиент! Забрать чаевые!</button>
-
-    <div class="section">
-        <h3>🏪 Улучшения и бизнес:</h3>
-        
-        <div class="upgrade">
-            <div>
-                <strong>☕ Новая кофемашина</strong> (Ур. <span id="lvl-machine">0</span>)<br>
-                <small>+1 монета за клик</small>
-            </div>
-            <button id="buy-machine" onclick="buyUpgrade('machine')">Купить (<span id="cost-machine">15</span>)</button>
-        </div>
-
-        <div class="upgrade">
-            <div>
-                <strong>🧑‍🍳 Нанять бариста</strong> (Шт. <span id="lvl-barista">0</span>)<br>
-                <small>+2 монеты в секунду</small>
-            </div>
-            <button id="buy-barista" onclick="buyUpgrade('barista')">Купить (<span id="cost-barista">50</span>)</button>
-        </div>
-
-        <div class="upgrade">
-            <div>
-                <strong>🛋️ Ремонт зала</strong> (Ур. <span id="lvl-interior">0</span>)<br>
-                <small>+5 монет за клик</small>
-            </div>
-            <button id="buy-interior" onclick="buyUpgrade('interior')">Купить (<span id="cost-interior">200</span>)</button>
-        </div>
-
-        <div class="upgrade">
-            <div>
-                <strong>🔥 Цех обжарки зерен</strong> (Шт. <span id="lvl-roaster">0</span>)<br>
-                <small>+15 монет в секунду</small>
-            </div>
-            <button id="buy-roaster" onclick="buyUpgrade('roaster')">Купить (<span id="cost-roaster">800</span>)</button>
-        </div>
-
-        <div class="upgrade">
-            <div>
-                <strong>🏢 Открыть филиал</strong> (Шт. <span id="lvl-branch">0</span>)<br>
-                <small>+50 монет в секунду</small>
-            </div>
-            <button id="buy-branch" onclick="buyUpgrade('branch')">Купить (<span id="cost-branch">3000</span>)</button>
-        </div>
+    <div class="menu-section">
+        <h3>🏆 ДОСТИЖЕНИЯ</h3>
+        <div class="achievement" id="ach-1">☕ Первая чашка (10 кликов)</div>
+        <div class="achievement" id="ach-2">💰 Начинающий бариста (500 монет)</div>
+        <div class="achievement" id="ach-3">🔥 Кофейный маньяк (200 кликов)</div>
+        <div class="achievement" id="ach-4">👑 Кофейный магнат (10 000 монет)</div>
     </div>
 
-    <div class="section">
-        <h3>🏆 Достижения:</h3>
-        <div class="achievements-grid">
-            <div class="ach-card" id="ach-clicks">👆 Первые 50 кликов</div>
-            <div class="ach-card" id="ach-rich">💰 Накопить 1 000 монет</div>
-            <div class="ach-card" id="ach-team">👥 Нанять 5 бариста</div>
-            <div class="ach-card" id="ach-empire">🌍 Открыть 1 филиал</div>
-        </div>
-    </div>
-
-    <div class="footer-controls">
-        <button id="reset-btn" onclick="resetGame()">Сбросить прогресс</button>
+    <div class="menu-section">
+        <h3>⚙️ НАСТРОЙКИ</h3>
+        <button class="menu-btn" id="sound-btn" onclick="toggleSound()">🔊 ЗВУК: ВКЛ</button>
+        <button class="menu-btn danger" onclick="resetGame()">🗑️ СБРОСИТЬ ПРОГРЕСС</button>
     </div>
 </div>
 
-<script>
-    let state = {
-        coins: 0,
-        totalClicks: 0,
-        coinsPerClick: 1,
-        coinsPerSecond: 0,
-        machineLvl: 0,
-        machineCost: 15,
-        baristaLvl: 0,
-        baristaCost: 50,
-        interiorLvl: 0,
-        interiorCost: 200,
-        roasterLvl: 0,
-        roasterCost: 800,
-        branchLvl: 0,
-        branchCost: 3000
-    };
+<!-- Главный экран кофейни -->
+<div class="container" id="main-card">
+    <h1 style="margin: 0 0 12px 0; font-size: 32px; color: #faedcd;">👑 ИМПЕРИЯ КОФЕ</h1>
 
-    function saveGame() {
-        localStorage.setItem('coffeeEmpireSave', JSON.stringify(state));
-    }
+    <div class="cafe-visual">
+        <span id="cafe-icon">🛒</span>
+        <div class="rank-badge">УРОВЕНЬ: <span id="rank">Уличный ларек</span></div>
+    </div>
 
-    function loadGame() {
-        const savedString = localStorage.getItem('coffeeEmpireSave');
-        if (savedString) {
-            const savedData = JSON.parse(savedString);
-            state = { ...state, ...savedData };
-        }
-    }
-
-    function resetGame() {
-        if (confirm("Вы уверены, что хотите удалить весь прогресс и начать заново?")) {
-            localStorage.removeItem('coffeeEmpireSave');
-            location.reload();
-        }
-    }
-
-    function makeCoffee(event) {
-        state.coins += state.coinsPerClick;
-        state.totalClicks += 1;
-        showFloatingText(event.clientX, event.clientY, "+" + state.coinsPerClick);
-        updateUI();
-        saveGame();
-    }
-
-    function showFloatingText(x, y, text) {
-        const el = document.createElement('div');
-        el.className = 'floating-text';
-        el.innerText = text;
-        el.style.left = (x - 10) + 'px';
-        el.style.top = (y - 20) + 'px';
-        document.body.appendChild(el);
-        setTimeout(() => el.remove(), 800);
-    }
-
-    function buyUpgrade(type) {
-        if (type === 'machine' && state.coins >= state.machineCost) {
-            state.coins -= state.machineCost;
-            state.machineLvl++;
-            state.coinsPerClick += 1;
-            state.machineCost = Math.round(state.machineCost * 1.5);
-        } else if (type === 'barista' && state.coins >= state.baristaCost) {
-            state.coins -= state.baristaCost;
-            state.baristaLvl++;
-            state.coinsPerSecond += 2;
-state.baristaCost = Math.round(state.baristaCost * 1.6);
-} else if (type === 'interior' && state.coins >= state.interiorCost) {
-state.coins -= state.interiorCost;
-state.interiorLvl++;
-state.coinsPerClick += 5;
-state.interiorCost = Math.round(state.interiorCost * 1.8);
-} else if (type === 'roaster' && state.coins >= state.roasterCost) {
-state.coins -= state.roasterCost;
-state.roasterLvl++;
-state.coinsPerSecond += 15;
-state.roasterCost = Math.round(state.roasterCost * 1.7);
-} else if (type === 'branch' && state.coins >= state.branchCost) {
-state.coins -= state.branchCost;
-state.branchLvl++;
-state.coinsPerSecond += 50;
-state.branchCost = Math.round(state.branchCost * 1.9);
+// Игровые переменные
+let coins = 0;
+let totalCoinsEarned = 0;
+let totalClicks = 0;
+let coinsPerClick = 1;
+let coinsPerSecond = 0;
+let machineLvl = 0, machineCost = 15;
+let baristaLvl = 0, baristaCost = 50;
+let interiorLvl = 0, interiorCost = 200;
+let roasterLvl = 0, roasterCost = 600;
+let franchiseLvl = 0, franchiseCost = 2000;
+let soundEnabled = true;
+let comboValue = 0;
+let isFeverMode = false;
+// Генератор простых звуков без внешних файлов
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function playSound(freq, duration) {
+if (!soundEnabled) return;
+try {
+if (audioCtx.state === 'suspended') audioCtx.resume();
+const osc = audioCtx.createOscillator();
+const gain = audioCtx.createGain();
+osc.type = 'triangle';
+osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+osc.connect(gain);
+gain.connect(audioCtx.destination);
+osc.start();
+osc.stop(audioCtx.currentTime + duration);
+} catch (e) {}
+}
+// Открытие и закрытие правого меню
+function toggleMenu() {
+document.getElementById('side-menu').classList.toggle('open');
+playSound(400, 0.1);
+}
+function toggleSound() {
+soundEnabled = !soundEnabled;
+document.getElementById('sound-btn').innerText = soundEnabled ? "🔊 ЗВУК: ВКЛ" : "🔇 ЗВУК: ВЫКЛ";
+saveGame();
+}
+// Сохранение и загрузка (совместимо со старыми сохранениями)
+function saveGame() {
+const gameData = {
+coins, totalCoinsEarned, totalClicks, coinsPerClick, coinsPerSecond,
+machineLvl, machineCost, baristaLvl, baristaCost,
+interiorLvl, interiorCost, roasterLvl, roasterCost,
+franchiseLvl, franchiseCost, soundEnabled
+};
+localStorage.setItem('coffeeEmpireSave', JSON.stringify(gameData));
+}
+function loadGame() {
+const savedString = localStorage.getItem('coffeeEmpireSave');
+if (savedString) {
+const d = JSON.parse(savedString);
+coins = d.coins ?? 0;
+totalCoinsEarned = d.totalCoinsEarned ?? coins;
+totalClicks = d.totalClicks ?? 0;
+coinsPerClick = d.coinsPerClick ?? 1;
+coinsPerSecond = d.coinsPerSecond ?? 0;
+machineLvl = d.machineLvl ?? 0; machineCost = d.machineCost ?? 15;
+baristaLvl = d.baristaLvl ?? 0; baristaCost = d.baristaCost ?? 50;
+interiorLvl = d.interiorLvl ?? 0; interiorCost = d.interiorCost ?? 200;
+roasterLvl = d.roasterLvl ?? 0; roasterCost = d.roasterCost ?? 600;
+franchiseLvl = d.franchiseLvl ?? 0; franchiseCost = d.franchiseCost ?? 2000;
+soundEnabled = d.soundEnabled ?? true;
+document.getElementById('sound-btn').innerText = soundEnabled ? "🔊 ЗВУК: ВКЛ" : "🔇 ЗВУК: ВЫКЛ";
+}
+}
+function resetGame() {
+if (confirm("Удалить весь прогресс и начать кофейню заново?")) {
+localStorage.removeItem('coffeeEmpireSave');
+location.reload();
+}
+}
+// Клик по кнопке кофе
+function makeCoffee(event) {
+let multiplier = isFeverMode ? 2 : 1;
+let earned = coinsPerClick * multiplier;
+coins += earned;
+totalCoinsEarned += earned;
+totalClicks++;
+playSound(isFeverMode ? 650 : 480, 0.08);
+showFloatingText(event.clientX, event.clientY, "+" + earned + (isFeverMode ? " 🔥" : ""));
+// Заполнение шкалы комбо
+if (!isFeverMode) {
+comboValue = Math.min(100, comboValue + 8);
+if (comboValue >= 100) {
+activateFever();
+}
 }
 updateUI();
 saveGame();
 }
+function activateFever() {
+isFeverMode = true;
+document.getElementById('main-card').classList.add('fever-active');
+document.getElementById('combo-text').innerText = "🔥🔥 СЧАСТЛИВЫЙ ЧАС! ДОХОД X2! 🔥🔥";
+playSound(800, 0.3);
+setTimeout(() => {
+isFeverMode = false;
+comboValue = 0;
+document.getElementById('main-card').classList.remove('fever-active');
+document.getElementById('combo-text').innerText = "🔥 КОМБО-ШКАЛА (КЛИКАЙ БЫСТРЕЕ ДЛЯ X2!)";
+updateUI();
+}, 10000);
+}
+function showFloatingText(x, y, text) {
+const el = document.createElement('div');
+el.className = 'floating-text';
+el.innerText = text;
+el.style.left = (x - 15) + 'px';
+el.style.top = (y - 25) + 'px';
+document.body.appendChild(el);
+setTimeout(() => el.remove(), 800);
+}
+// Покупки улучшений
+function buyMachine() {
+if (coins >= machineCost) {
+coins -= machineCost; machineLvl++; coinsPerClick += 1;
+machineCost = Math.round(machineCost * 1.5);
+playSound(600, 0.15); updateUI(); saveGame();
+}
+}
+function buyBarista() {
+if (coins >= baristaCost) {
+coins -= baristaCost; baristaLvl++; coinsPerSecond += 2;
+baristaCost = Math.round(baristaCost * 1.6);
+playSound(600, 0.15); updateUI(); saveGame();
+}
+}
+function buyInterior() {
+if (coins >= interiorCost) {
+coins -= interiorCost; interiorLvl++; coinsPerClick += 5;
+interiorCost = Math.round(interiorCost * 1.75);
+playSound(600, 0.15); updateUI(); saveGame();
+}
+}
+function buyRoaster() {
+if (coins >= roasterCost) {
+coins -= roasterCost; roasterLvl++; coinsPerSecond += 15;
+roasterCost = Math.round(roasterCost * 1.7);
+playSound(600, 0.15); updateUI(); saveGame();
+}
+}
+function buyFranchise() {
+if (coins >= franchiseCost) {
+coins -= franchiseCost; franchiseLvl++; coinsPerClick += 25;
+franchiseCost = Math.round(franchiseCost * 1.85);
+playSound(600, 0.15); updateUI(); saveGame();
+}
+}
+// Обновление визуала кофейни и ранга
 function updateRankAndVisual() {
 let rankName = "Уличный ларек";
-let visualIcon = "🥤";
-if (state.coins >= 100 || state.baristaLvl >= 1) {
-rankName = "Уютная кофейня";
-visualIcon = "☕";
-}
-if (state.coins >= 500 || state.interiorLvl >= 2) {
-rankName = "Кофейня в центре";
-visualIcon = "🏪";
-}
-if (state.coins >= 2500 || state.branchLvl >= 1) {
-rankName = "Сеть кофеен";
-visualIcon = "🏢";
-}
-if (state.coins >= 15000 || state.branchLvl >= 3) {
-rankName = "Мировая империя";
-visualIcon = "🏰";
-}
+let icon = "🛒";
+if (totalCoinsEarned >= 150) { rankName = "Уютная кофейня"; icon = "🏠"; }
+if (totalCoinsEarned >= 1000) { rankName = "Кофейня в центре"; icon = "🏪"; }
+if (totalCoinsEarned >= 5000) { rankName = "Сеть кофеен"; icon = "🏢"; }
+if (totalCoinsEarned >= 25000) { rankName = "Мировая империя"; icon = "🏙️"; }
 document.getElementById('rank').innerText = rankName;
-document.getElementById('cafe-visual').innerText = visualIcon;
+document.getElementById('cafe-icon').innerText = icon;
 }
-function updateAchievements() {
-if (state.totalClicks >= 50) document.getElementById('ach-clicks').classList.add('unlocked');
-if (state.coins >= 1000) document.getElementById('ach-rich').classList.add('unlocked');
-if (state.baristaLvl >= 5) document.getElementById('ach-team').classList.add('unlocked');
-if (state.branchLvl >= 1) document.getElementById('ach-empire').classList.add('unlocked');
+// Проверка достижений в меню
+function checkAchievements() {
+if (totalClicks >= 10) document.getElementById('ach-1').classList.add('unlocked');
+if (totalCoinsEarned >= 500) document.getElementById('ach-2').classList.add('unlocked');
+if (totalClicks >= 200) document.getElementById('ach-3').classList.add('unlocked');
+if (totalCoinsEarned >= 10000) document.getElementById('ach-4').classList.add('unlocked');
 }
 function updateUI() {
-document.getElementById('coins').innerText = state.coins;
-document.getElementById('cpc').innerText = state.coinsPerClick;
-document.getElementById('btn-cpc').innerText = state.coinsPerClick;
-document.getElementById('cps').innerText = state.coinsPerSecond;
-document.getElementById('total-clicks').innerText = state.totalClicks;
-document.getElementById('lvl-machine').innerText = state.machineLvl;
-document.getElementById('cost-machine').innerText = state.machineCost;
-document.getElementById('buy-machine').disabled = state.coins < state.machineCost;
-document.getElementById('lvl-barista').innerText = state.baristaLvl;
-document.getElementById('cost-barista').innerText = state.baristaCost;
-document.getElementById('buy-barista').disabled = state.coins < state.baristaCost;
-document.getElementById('lvl-interior').innerText = state.interiorLvl;
-document.getElementById('cost-interior').innerText = state.interiorCost;
-document.getElementById('buy-interior').disabled = state.coins < state.interiorCost;
-document.getElementById('lvl-roaster').innerText = state.roasterLvl;
-document.getElementById('cost-roaster').innerText = state.roasterCost;
-document.getElementById('buy-roaster').disabled = state.coins < state.roasterCost;
-document.getElementById('lvl-branch').innerText = state.branchLvl;
-document.getElementById('cost-branch').innerText = state.branchCost;
-document.getElementById('buy-branch').disabled = state.coins < state.branchCost;
+let currentCpc = coinsPerClick * (isFeverMode ? 2 : 1);
+document.getElementById('coins').innerText = coins;
+document.getElementById('cpc').innerText = currentCpc;
+document.getElementById('btn-cpc').innerText = currentCpc;
+document.getElementById('cps').innerText = coinsPerSecond;
+document.getElementById('lvl-machine').innerText = machineLvl;
+document.getElementById('cost-machine').innerText = machineCost;
+document.getElementById('buy-machine').disabled = coins < machineCost;
+document.getElementById('lvl-barista').innerText = baristaLvl;
+document.getElementById('cost-barista').innerText = baristaCost;
+document.getElementById('buy-barista').disabled = coins < baristaCost;
+document.getElementById('lvl-interior').innerText = interiorLvl;
+document.getElementById('cost-interior').innerText = interiorCost;
+document.getElementById('buy-interior').disabled = coins < interiorCost;
+document.getElementById('lvl-roaster').innerText = roasterLvl;
+document.getElementById('cost-roaster').innerText = roasterCost;
+document.getElementById('buy-roaster').disabled = coins < roasterCost;
+document.getElementById('lvl-franchise').innerText = franchiseLvl;
+document.getElementById('cost-franchise').innerText = franchiseCost;
+document.getElementById('buy-franchise').disabled = coins < franchiseCost;
+document.getElementById('combo-fill').style.width = comboValue + '%';
+document.getElementById('stat-clicks').innerText = totalClicks;
+document.getElementById('stat-total-coins').innerText = totalCoinsEarned;
 updateRankAndVisual();
-updateAchievements();
+checkAchievements();
 }
+// Пассивный доход каждую секунду и постепенное остывание шкалы комбо
 setInterval(function() {
-if (state.coinsPerSecond > 0) {
-state.coins += state.coinsPerSecond;
-updateUI();
+if (coinsPerSecond > 0) {
+coins += coinsPerSecond;
+totalCoinsEarned += coinsPerSecond;
 saveGame();
 }
+if (!isFeverMode && comboValue > 0) {
+comboValue = Math.max(0, comboValue - 5);
+}
+updateUI();
 }, 1000);
+// VIP-клиент каждые 35 секунд
 setInterval(function() {
 const bonusBtn = document.getElementById('bonus-btn');
 bonusBtn.style.display = 'inline-block';
-setTimeout(() => {
-bonusBtn.style.display = 'none';
-}, 7000);
-}, 30000);
+setTimeout(() => { bonusBtn.style.display = 'none'; }, 7000);
+}, 35000);
 function claimBonus() {
-const bonusAmount = (state.coinsPerClick * 15) + 20;
-state.coins += bonusAmount;
+const bonusAmount = (coinsPerClick * 20) + 30;
+coins += bonusAmount;
+totalCoinsEarned += bonusAmount;
 document.getElementById('bonus-btn').style.display = 'none';
-alert("VIP-клиент оставил щедрые чаевые: +" + bonusAmount + " монет!");
+playSound(900, 0.25);
+alert("🌟 VIP-клиент оставил щедрые чаевые: +" + bonusAmount + " монет!");
 updateUI();
 saveGame();
 }
 loadGame();
 updateUI();
-
 </script>
 
 </body>
